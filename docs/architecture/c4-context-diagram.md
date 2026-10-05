@@ -5,25 +5,31 @@ que pueden participar según la configuración del despliegue.
 Los servicios externos no forman parte de las mejoras propuestas.
 
 ```mermaid
-flowchart TB
-    member["Miembro de la organización<br/>[Persona]<br/>Lee y envía mensajes,<br/>navega y busca información"]
+C4Context
+      title System Context diagram for Zulip
 
-    admin["Administrador de la organización<br/>[Persona]<br/>Gestiona usuarios, permisos<br/>y configuración"]
+      Person(member, "Miembro", "Miembro de la organización de trabajo.")
+      Person(admin, "Administrador", "Administrador de la organización de trabajo")
 
-    zulip["Zulip<br/>[Sistema de software]<br/>Comunicación por canales,<br/>temas y mensajes privados"]
+      %% 2. Core System
+      System(zulip, "Zulip", "Comunicación por canales, temas y mensajes privados.")
 
-    auth["Proveedor de identidad<br/>[Sistema externo opcional]<br/>Autenticación externa"]
+      %% 3. External Systems
+      System_Ext(smtp, "Sistema de correo electrónico", "Notificaciones y correo")
+      System_Ext(auth, "Proveedor de identidad", "Autenticación externa")
+      SystemDb_Ext(file, "Servicio de almacenamiento", "Maneja archivos adjuntos.")
 
-    email["Servicio de correo electrónico<br/>[Sistema externo]<br/>Notificaciones y correo"]
+     %% Relationships
+      Rel(member, zulip, "Lee y envía mensajes, navega y busca información")
+      Rel(admin, zulip, "Gestiona usuarios, permisos, configuraciones")
+      BiRel(smtp, zulip, "Envía y recibe correo")
+      BiRel(file, zulip, "Guarda y recupera archivos")
+      Rel(zulip, auth, "Solicita autenticación")
 
-    integrations["Servicios e integraciones<br/>[Sistema externo opcional]<br/>Webhooks, bots y APIs"]
+      UpdateRelStyle(member, zulip, $offsetY="-30", $offsetX="-200")
+      UpdateRelStyle(admin, zulip, $offsetX="-80")
+      UpdateRelStyle(smtp, zulip, $offsetX="-50", $offsetY="20")
 
-    storage["Servicio de almacenamiento<br/>[Sistema externo opcional]<br/>Archivos adjuntos"]
+      UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
 
-    member -->|"Lee y envía mensajes; navega y busca"| zulip
-    admin -->|"Gestiona usuarios y configuración"| zulip
-    zulip -->|"Solicita autenticación"| auth
-    zulip -->|"Envía y recibe correo"| email
-    zulip <-->|"Intercambia eventos y mensajes"| integrations
-    zulip -->|"Guarda y recupera archivos"| storage
 ```
