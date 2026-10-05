@@ -17,6 +17,7 @@ C4Context
       %% 3. External Systems
       System_Ext(smtp, "Sistema de correo electrónico", "Notificaciones y correo")
       System_Ext(auth, "Proveedor de identidad", "Autenticación externa")
+      System_Ext(other, "Servicios e integraciones externas", "Webhooks, bots, APIs y aplicaciones de terceros")
       SystemDb_Ext(file, "Servicio de almacenamiento", "Maneja archivos adjuntos.")
 
      %% Relationships
@@ -25,10 +26,12 @@ C4Context
       BiRel(smtp, zulip, "Envía y recibe correo")
       BiRel(file, zulip, "Guarda y recupera archivos")
       Rel(zulip, auth, "Solicita autenticación")
+      Rel(zulip, other, "Intercambia eventos y mensajes")
 
       UpdateRelStyle(member, zulip, $offsetY="-30", $offsetX="-200")
       UpdateRelStyle(admin, zulip, $offsetX="-80")
       UpdateRelStyle(smtp, zulip, $offsetX="-50", $offsetY="20")
+      UpdateRelStyle(file, zulip, $offsetX="-50", $offsetY="100")
 
       UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
 
