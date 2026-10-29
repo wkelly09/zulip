@@ -20,6 +20,7 @@ import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_scroll from "./message_scroll.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as mouse_drag from "./mouse_drag.ts";
@@ -333,9 +334,23 @@ export function initialize(): void {
 
         // Since it take a few milliseconds for this button complete disappear transition,
         // it is possible for user to click it before it hides when switching narrows.
-        if (narrow_state.is_message_feed_visible()) {
-            navigate.to_end();
+        if (!narrow_state.is_message_feed_visible()) {
+            return;
         }
+
+        if (message_scroll.is_at_end_of_conversation()) {
+            if (narrow_state.narrowed_by_topic_reply()) {
+                message_view.narrow_to_next_topic({
+                    trigger: "next_topic_unread_hotkey",
+                    only_followed_topics: false,
+                });
+            } else if (narrow_state.narrowed_by_pm_reply()) {
+                message_view.narrow_to_next_pm_string({trigger: "next_unread_button"});
+            }
+            return;
+        }
+
+        navigate.to_end();
     });
 
     $("body").on("click", ".message_row", function () {
