@@ -125,6 +125,49 @@ test("person_multi_word_completion", () => {
     ]);
 });
 
+test("active_people_suggestions_before_deactivated_people", ({override}) => {
+    override(narrow_state, "stream_id", noop);
+    const inactive = make_user({
+        user_id: 104,
+        full_name: "Regression A",
+        is_active: false,
+    });
+    const active = make_user({
+        user_id: 105,
+        full_name: "Regression B",
+    });
+    people._add_user(inactive);
+    people.add_active_user(active, "server_events");
+
+    assert.deepEqual(get_suggestions("Regression"), [
+        "Regression",
+        `dm:${active.user_id}`,
+        `sender:${active.user_id}`,
+        `dm-including:${active.user_id}`,
+        `mentions:${active.user_id}`,
+        `dm:${inactive.user_id}`,
+        `sender:${inactive.user_id}`,
+        `dm-including:${inactive.user_id}`,
+        `mentions:${inactive.user_id}`,
+    ]);
+
+    for (const operator of ["dm", "sender", "dm-including", "mentions"]) {
+        assert.deepEqual(get_suggestions(`${operator}:Regression`), [
+            `${operator}:${active.user_id}`,
+            `${operator}:${inactive.user_id}`,
+        ]);
+    }
+
+    override(page_params, "is_spectator", true);
+    assert.deepEqual(get_suggestions("Regression"), [
+        "Regression",
+        `sender:${active.user_id}`,
+        `sender:${inactive.user_id}`,
+    ]);
+
+    assert.deepEqual(get_suggestions("sender:Regression A"), [`sender:${inactive.user_id}`]);
+});
+
 test("basic_get_suggestions", ({override}) => {
     const query = "fred";
 

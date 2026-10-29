@@ -1295,12 +1295,21 @@ function build_filterer_list(
 
     function get_people(
         flavor: "dm" | "sender" | "dm-including" | "mentions",
+        is_active: boolean,
     ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
         return function (
             last: NarrowCanonicalTermSuggestion,
             base_terms: NarrowCanonicalTerm[],
         ): Suggestion[] {
-            return get_person_suggestions(people_getter, last, base_terms, flavor);
+            return get_person_suggestions(
+                () =>
+                    people_getter().filter(
+                        (person) => people.is_person_active(person.user_id) === is_active,
+                    ),
+                last,
+                base_terms,
+                flavor,
+            );
         };
     }
 
@@ -1317,10 +1326,14 @@ function build_filterer_list(
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
         get_channel_suggestions,
-        get_people("dm"),
-        get_people("sender"),
-        get_people("dm-including"),
-        get_people("mentions"),
+        get_people("dm", true),
+        get_people("sender", true),
+        get_people("dm-including", true),
+        get_people("mentions", true),
+        get_people("dm", false),
+        get_people("sender", false),
+        get_people("dm-including", false),
+        get_people("mentions", false),
         get_topic_suggestions,
         get_has_filter_suggestions,
         get_date_suggestions,
@@ -1332,7 +1345,8 @@ function build_filterer_list(
             get_operator_suggestions,
             get_is_filter_suggestions,
             get_channel_suggestions,
-            get_people("sender"),
+            get_people("sender", true),
+            get_people("sender", false),
             get_topic_suggestions,
             get_has_filter_suggestions,
             get_date_suggestions,
