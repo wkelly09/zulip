@@ -8,6 +8,8 @@ import os
 import sys
 from typing import Any
 
+from pygments.lexers.special import TextLexer
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from version import LATEST_RELEASE_VERSION, ZULIP_VERSION
 
@@ -69,5 +71,6 @@ copybutton_exclude = ".linenos, .gp"
 
 
 def setup(app: Any) -> None:
+    app.add_lexer("mermaid", TextLexer)
     # overrides for wide tables in RTD theme
     app.add_css_file("theme_overrides.css")  # path relative to _static
