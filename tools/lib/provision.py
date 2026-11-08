@@ -170,6 +170,9 @@ if (vendor == "debian" and os_version == "13") or (vendor == "ubuntu" and os_ver
         "libmsgpack-dev",
         *VENV_DEPENDENCIES,
     ]
+    if vendor == "debian":
+        # libarrow2600 does not declare its OpenTelemetry runtime dependency.
+        SYSTEM_DEPENDENCIES.append("opentelemetry-cpp")
 elif "debian" in os_families():
     DEBIAN_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES
 

@@ -14,9 +14,50 @@ import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
 import {the} from "./util.ts";
 
+export function is_at_end_of_conversation(): boolean {
+    const current = message_lists.current;
+
+    if (current === undefined || current.visibly_empty()) {
+        return false;
+    }
+
+    return (
+        narrow_state.narrowed_by_reply() &&
+        current.data.fetch_status.has_found_newest() &&
+        message_viewport.bottom_rendered_message_visible()
+    );
+}
+
+function update_scroll_to_bottom_button(): void {
+    const at_end = is_at_end_of_conversation();
+    $("#scroll-to-bottom-button .zulip-icon")
+        .toggleClass("zulip-icon-chevron-down", !at_end)
+        .toggleClass("zulip-icon-chevron-right", at_end);
+
+    let tooltip_template = "scroll-to-bottom-button-tooltip-template";
+    if (at_end) {
+        tooltip_template = narrow_state.narrowed_by_topic_reply()
+            ? "next-unread-topic-button-tooltip-template"
+            : "next-unread-dm-button-tooltip-template";
+    }
+
+    const $tooltip_target = $<tippy.ReferenceElement>("#scroll-to-bottom-button-clickable-area");
+    if ($tooltip_target.attr("data-tooltip-template-id") !== tooltip_template) {
+        $tooltip_target.attr("data-tooltip-template-id", tooltip_template);
+        $tooltip_target[0]?._tippy?.destroy();
+    }
+}
+
 let hide_scroll_to_bottom_timer: ReturnType<typeof setInterval> | undefined;
 export function hide_scroll_to_bottom(): void {
+    update_scroll_to_bottom_button();
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
+    if (is_at_end_of_conversation()) {
+        clearInterval(hide_scroll_to_bottom_timer);
+        $show_scroll_to_bottom_button.addClass("show");
+        return;
+    }
+
     if (message_lists.current === undefined) {
         // Scroll to bottom button is not for non-message views.
         $show_scroll_to_bottom_button.removeClass("show");
@@ -47,10 +88,8 @@ export function hide_scroll_to_bottom(): void {
 }
 
 export function show_scroll_to_bottom_button(): void {
-    if (message_viewport.bottom_rendered_message_visible()) {
-        // Only show scroll to bottom button when
-        // last message is not visible in the
-        // current scroll position.
+    update_scroll_to_bottom_button();
+    if (message_viewport.bottom_rendered_message_visible() && !is_at_end_of_conversation()) {
         return;
     }
 
