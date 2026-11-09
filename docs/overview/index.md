@@ -7,7 +7,7 @@ maxdepth: 3
 
 readme
 architecture-overview
-../architecture/c4-context-diagram
+../architecture/c4-diagram
 release-lifecycle
 roadmap
 changelog
